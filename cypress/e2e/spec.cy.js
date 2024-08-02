@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 describe('Agenda Contatos App', () => {
   const baseUrl = 'https://agenda-contatos-react.vercel.app/';
 
@@ -6,39 +8,54 @@ describe('Agenda Contatos App', () => {
   });
 
   it('should add a new contact', () => {
-    cy.get('input[name="name"]').type('John Doe');
-    cy.get('input[name="email"]').type('john.doe@example.com');
-    cy.get('input[name="phone"]').type('123456789');
-    cy.get('button[type="submit"]').click();
+    cy.get('input[placeholder="Nome"]').type('John Doe');
+    cy.get('input[placeholder="E-mail"]').type('john.doe@example.com');
+    cy.get('input[placeholder="Telefone"]').type('123456789');
+    cy.get('form').contains('Adicionar').click();
 
-    cy.contains('John Doe').should('exist');
-    cy.contains('john.doe@example.com').should('exist');
-    cy.contains('123456789').should('exist');
+    cy.contains('div.contato', 'John Doe').should('exist');
+    cy.contains('div.contato', 'john.doe@example.com').should('exist');
+    cy.contains('div.contato', '123456789').should('exist');
   });
 
   it('should edit an existing contact', () => {
-    // Adiciona um contato para editar
-    cy.get('input[name="name"]').type('Jane Doe');
-    cy.get('input[name="email"]').type('jane.doe@example.com');
-    cy.get('input[name="phone"]').type('987654321');
-    cy.get('button[type="submit"]').click();
+    // First add a contact to edit
+    cy.get('input[placeholder="Nome"]').type('Jane Doe');
+    cy.get('input[placeholder="E-mail"]').type('jane.doe@example.com');
+    cy.get('input[placeholder="Telefone"]').type('987654321');
+    cy.get('form').contains('Adicionar').click();
 
-    cy.contains('Jane Doe').parent().find('button').contains('Edit').click();
-    cy.get('input[name="name"]').clear().type('Jane Smith');
-    cy.get('button[type="submit"]').click();
+    // Ensure the contact was added
+    cy.contains('div.contato', 'Jane Doe').should('exist');
 
-    cy.contains('Jane Smith').should('exist');
-    cy.contains('Jane Doe').should('not.exist');
+    // Edit the contact
+    cy.contains('div.contato', 'Jane Doe').within(() => {
+      cy.contains('button', 'Editar').click();
+    });
+    cy.get('input[placeholder="Nome"]').clear().type('Jane Smith');
+    cy.get('form').contains('Salvar').click();
+
+    // Ensure the contact was edited
+    cy.contains('div.contato', 'Jane Smith').should('exist');
+    cy.contains('div.contato', 'Jane Doe').should('not.exist');
   });
 
   it('should delete a contact', () => {
-    // Adicione um contato para excluir
-    cy.get('input[name="name"]').type('Bob Smith');
-    cy.get('input[name="email"]').type('bob.smith@example.com');
-    cy.get('input[name="phone"]').type('123123123');
-    cy.get('button[type="submit"]').click();
+    // First add a contact to delete
+    cy.get('input[placeholder="Nome"]').type('Bob Smith');
+    cy.get('input[placeholder="E-mail"]').type('bob.smith@example.com');
+    cy.get('input[placeholder="Telefone"]').type('123123123');
+    cy.get('form').contains('Adicionar').click();
 
-    cy.contains('Bob Smith').parent().find('button').contains('Delete').click();
-    cy.contains('Bob Smith').should('not.exist');
+    // Ensure the contact was added
+    cy.contains('div.contato', 'Bob Smith').should('exist');
+
+    // Delete the contact
+    cy.contains('div.contato', 'Bob Smith').within(() => {
+      cy.contains('button', 'Remover').click();
+    });
+
+    // Ensure the contact was deleted
+    cy.contains('div.contato', 'Bob Smith').should('not.exist');
   });
 });
